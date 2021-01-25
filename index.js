@@ -1,74 +1,91 @@
-// array of questions for user
-// professional README.md is generated with the title of my project and sections entitled Description, Table of Contents, Installation, Usage, License, Contributing, Tests, and Questions
-const inquirer = require('inquirer');
-const fs = require('fs');
-const generateMarkdown = require('./utils/generateMarkdown');
+const inquirer = require("inquirer");
+const fs = require("fs");
+const util = require("util");
 
-const questions = [
-{
-    type: 'input',
-    name: 'title',
-    message: 'What is the title of your project?'   
-},
-{
-    type: 'input',
-    name: 'description',
-    message: 'What is the description of your project?'
-},
-{
-    type: 'input',
-    name: 'installation',
-    message: 'How does user install your program?'
-},
-{
-    type: 'input',
-    name: 'usage',
-    message: 'What does user need to know about using your program?'
-},
-{
-    type: 'input',
-    name: 'license',
-    message: 'What license should you give to your program?'
-},
-{
-    type: 'input',
-    name: 'contributing',
-    message: 'Who contributed to this project?'
-},
-{
-    type: 'input',
-    name: 'test',
-    message: 'What test did you run on this project?'
-},
-{
-    type: 'input',
-    name: 'github',
-    message: 'What is your github username?'
-},
-{
-    type: 'input',
-    name: 'email',
-    message: 'What is your email address?'
-}
-];
 
-// function to write README file
-function writeToFile(fileName, data) {
+const writeFileAsync = util.promisify(fs.writeFile);
 
-    then((data) => {
-        const filename = `${data.name.toLowerCase().split(' ').join('')}.json`;
-    
-        fs.writeToFile(fileName, JSON.stringify(data, null, 2), (err) =>
-        err ? console.log(err) : console.log('Success!')
-        );
+//ask user for their input
+const promptUser = () => {
+    inquirer.prompt([
+        {
+            type: "input",
+            message: "What is the title of your project?",
+            name: "title"
+        },
+            {type: "input",
+             message: "What is the project description, installation instructions, usage information, contribution guildlines, and test instructions?",
+             name: "description",
+        },
+            {type: "list",
+            message: "What is the license?",
+            choices: [
+                "MIT",
+                "Apache"
+                ],
+            name: "license"
+        },
+            {type: "input",
+            message: "What is your Github username?",
+            name: "gitHubName"
+            
+            },
+            {type: "input",
+            message: "What is your Email?",
+            name: "email"
+            
+            },
+            {type: "checkbox",
+            message: "How can you be reached?",
+            choices: [
+                "Cell Phone",
+                "Twitter",
+                "Slack"
+            ],
+            name: "contact"
+            },
+            
+    ]).then (function(response){
+        console.log(response);
+        let createReadme = generateREADME(response);
+        console.log(createReadme);
+        writeFileAsync("README.md", createReadme).then(
+            err => console.log("success!")
+        )
     })
 }
 
-// function to initialize program
-function init() {
-inquirer.prompt(questions).then(data => 
-    console.log(data)) 
-}
+promptUser();
 
-// function call to initialize program
-init();
+function generateREADME(response){
+    let readMe =
+`### **Table of Contents:**
+    
+[Go to Title](#title)
+    
+[Go to Description](#description)
+    
+[Go to License](#license)
+    
+[Go to GitHubName](#github)
+    
+[Go to Email](#email)
+    
+[Go to Contact](#contact)
+# Title:
+# ${response.title}
+## Description:
+${response.description}
+## License:
+_${response.license}_
+## Github:
+[**${response.gitHubName}**](http://github.com/${response.gitHubName})
+## Email:
+*${response.email}*
+## Contact:
+${response.contact}
+
+`
+
+    return(readMe)
+}
